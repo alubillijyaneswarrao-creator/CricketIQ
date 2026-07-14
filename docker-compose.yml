@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: cricketiq-db
+    environment:
+      POSTGRES_DB: cricketiq
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: cricketiq-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/cricketiq
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CHROMA_DB_DIR=/app/chroma_db
+    volumes:
+      - chroma-data:/app/chroma_db
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    container_name: cricketiq-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  chroma-data:
