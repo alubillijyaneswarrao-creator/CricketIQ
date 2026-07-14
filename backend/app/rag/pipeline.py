@@ -33,12 +33,19 @@ class SimpleFallbackEmbeddings:
 
 # Setup Embeddings
 embeddings = None
-try:
-    logger.info("Initializing HuggingFace Sentence Transformers...")
-    from langchain_community.embeddings import HuggingFaceEmbeddings
-    embeddings = HuggingFaceEmbeddings(model_name=f"sentence-transformers/{settings.EMBEDDING_MODEL}")
-except Exception as e:
-    logger.warning(f"Could not load HuggingFace Embeddings: {e}. Falling back to deterministic word-vector model.")
+if settings.GEMINI_API_KEY:
+    try:
+        logger.info("Initializing Google Gemini Embeddings...")
+        from langchain_google_genai import GoogleGenAIEmbeddings
+        embeddings = GoogleGenAIEmbeddings(
+            model="models/embedding-001",
+            google_api_key=settings.GEMINI_API_KEY
+        )
+    except Exception as e:
+        logger.warning(f"Could not load Google Gemini Embeddings: {e}. Falling back to deterministic word-vector model.")
+        embeddings = SimpleFallbackEmbeddings()
+else:
+    logger.info("No GEMINI_API_KEY configured. Using deterministic fallback embeddings.")
     embeddings = SimpleFallbackEmbeddings()
 
 # Setup Vector Store (ChromaDB)
