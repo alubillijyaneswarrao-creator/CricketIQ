@@ -36,7 +36,10 @@ embeddings = None
 if settings.GEMINI_API_KEY:
     try:
         logger.info("Initializing Google Gemini Embeddings...")
-        from langchain_google_genai import GoogleGenAIEmbeddings
+        try:
+            from langchain_google_genai import GoogleGenAIEmbeddings
+        except ImportError:
+            from langchain_google_genai.embeddings import GoogleGenAIEmbeddings
         embeddings = GoogleGenAIEmbeddings(
             model="models/embedding-001",
             google_api_key=settings.GEMINI_API_KEY
